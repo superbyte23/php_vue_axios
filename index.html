@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>VueJS and PHP</title>
+	<!-- bootstrap css -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+	<!-- datatable -->
+	<!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css"> -->
+</head>
+<body>
+	<div id="app" class="container my-3">
+		<div class="display-4 text-center mb-3">{{ title }}</div>
+		<div class="table-responsive mb-3">
+			<table class="table table-bordered">
+			  <thead class="thead-dark">
+			    <tr>
+				     <th>Name</th>
+				     <th>Email</th>
+				     <th>Country</th>
+				     <th>City</th>
+				     <th>Job</th>
+				     <th>Action</th>
+
+				   </tr>
+			  </thead>
+			  <tbody>
+			    <tr v-for='contact in contacts'>
+			     <td>{{ contact.name }}</td>
+			     <td>{{ contact.email }}</td>
+			     <td>{{ contact.country }}</td>
+			     <td>{{ contact.city }}</td>
+			     <td>{{ contact.job }}</td>
+			     <td>
+			     	<a href="#" class="btn btn-warning btn-sm" @click="getContactInfo(contact.id)" data-toggle="modal" data-target="#modalform">Edit</a>
+			     	<a href="#" class="btn btn-danger btn-sm" @click="deleteContactInfo(contact.id)">Delete</a>
+			     </td>
+			   	</tr>
+			  </tbody>
+			</table> 
+		</div>
+		<button class="btn btn-success btn-block" @click="resetForm()" data-toggle="modal" data-target="#modalform">Create</button>
+		<div class="modal fade" id="modalform" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content"> 
+		      <form action="javascript:void(0)">
+			      <div class="modal-header">
+			        <h5 class="modal-title" id="staticBackdropLabel">{{ modaltitle }}</h5>
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			          <span aria-hidden="true">&times;</span>
+			        </button>
+			      </div>
+			      <div class="modal-body">
+			      	<div class="form-group d-flex">
+			      		<label class="col-2">Name</label>
+			      	   	<input type="text" class="form-control col" name="name" v-model="name">
+			      	</div>
+			      	<div class="form-group d-flex">
+				      	<label class="col-2">Email</label>
+				      	<input type="email" class="form-control col" name="email" v-model="email">
+				    </div>
+				    <div class="form-group d-flex">
+				      	<label class="col-2">Country</label>
+				      	<input type="text" class="form-control col" name="country" v-model="country">
+				    </div>
+				    <div class="form-group d-flex">
+				      	<label class="col-2">City</label>
+				      	<input type="text" class="form-control col" name="city" v-model="city">
+				    </div>
+				    <div class="form-group d-flex">
+				      	<label class="col-2">Job</label>
+				      	<input type="text" class="form-control col" name="job" v-model="job">
+				    </div>
+					  
+					    
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			        <button type="submit" class="btn btn-success" v-if="button.text == 'Save'" @click="createContact()">{{ button.text }}</button> 
+			        <button type="submit" class="btn btn-success" v-if="button.text == 'Update'" @click="updateContact()">{{ button.text }}</button> 
+			      </div>
+		      </form>
+		    </div>
+		  </div>
+		</div>
+	</div>
+
+
+
+	<!-- bootstrap js -->
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script> 
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> 
+	<!-- axios -->
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<script> 
+		var app = new Vue({
+		    el: "#app",
+		    data: {
+		    	modaltitle: '',
+		    	title: 'VueJS and PHP Crud App',
+		    	id: '',
+			    name: '',
+			    email: '',
+			    country: '',
+			    city: '',
+			    job: '',
+			    contacts: [],
+			    button: {
+			    	text: 'Save'
+			    }
+			},
+		  	mounted: function () {
+			    console.log('Hello from Vue!')
+			    this.getContacts()
+		  	},
+
+			methods: {
+				getContacts: function(){
+					axios.get('api/crudApi.php')
+				        .then(function (response) {
+				            console.table(response.data);
+				            app.contacts = response.data;
+
+				        })
+				        .catch(function (error) {
+				            console.log(error);
+				    });
+				},
+				getContactInfo: function(id){
+					app.resetForm();
+					app.button.text = 'Update'
+					axios.get('api/crudApi.php', {
+						    params: {
+						      ID: id
+						    }
+						  })
+				        .then(function (response) {
+				            console.log(response.data);
+				            app.modaltitle = "VueJS and PHP Crud App : Edit";
+				            app.id = response.data.id;
+				            app.name = response.data.name;
+				            app.email = response.data.email;
+				            app.city = response.data.city;
+				            app.country = response.data.country;
+				            app.job = response.data.job;
+
+				        })
+				        .catch(function (error) {
+				            console.log(error);
+				    });
+				},
+				deleteContactInfo: function(id){
+					app.resetForm();
+					axios.get('api/crudApi.php', {
+						    params: {
+						      destroy: id
+						    }
+						  })
+				        .then(function (response) {
+				            alert(response.data.msg);
+				            app.getContacts();
+				        })
+				        .catch(function (error) {
+				            console.log(error);
+				    });
+				}, 
+				createContact: function(){ 
+			        let formData = new FormData(); 
+			        formData.append('name', this.name)
+			        formData.append('email', this.email)
+			        formData.append('city', this.city)
+			        formData.append('country', this.country)
+			        formData.append('job', this.job)
+			        formData.append('submit', true)
+
+			        var contact = {};
+			        formData.forEach(function(value, key){
+			            contact[key] = value;
+			        });
+
+			        axios({
+			            method: 'post',
+			            url: 'api/crudApi.php',
+			            data: formData,
+			            config: { headers: {'Content-Type': 'multipart/form-data' }}
+			        })
+			        .then(function (response) {
+			            //handle success
+		            	alert(response.data.msg);
+		            	app.getContacts();
+		            	app.resetForm(); 
+			        })
+			        .catch(function (response) {
+			            //handle error
+			            console.log(response)
+			        });
+				},
+
+				updateContact: function(){ 
+			        let formData = new FormData();
+			        formData.append('id', this.id) 
+			        formData.append('name', this.name)
+			        formData.append('email', this.email)
+			        formData.append('city', this.city)
+			        formData.append('country', this.country)
+			        formData.append('job', this.job)
+			        formData.append('update', true)
+
+			        var contact = {};
+			        formData.forEach(function(value, key){
+			            contact[key] = value;
+			        });
+
+			        axios({
+			            method: 'post',
+			            url: 'api/crudApi.php',
+			            data: formData,
+			            config: { headers: {'Content-Type': 'multipart/form-data' }}
+			        })
+			        .then(function (response) {
+			            //handle success
+		            	alert(response.data.msg);
+		            	app.getContacts();
+		            	app.resetForm(); 
+
+			        })
+			        .catch(function (response) {
+			            //handle error
+			            console.log(response)
+			        });
+				},
+
+				resetForm: function(){
+					app.button.text = 'Save'
+					this.modaltitle = 'VueJS and PHP Crud App : Create'
+					this.name = '';
+			        this.email = '';
+			        this.country = '';
+			        this.city = '';
+			        this.job = '';
+				}
+			}
+		});
+	</script>
+</body>
+</html>
